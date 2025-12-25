@@ -2,13 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ScoreBoard from './components/ScoreBoard';
 import Board from './components/Board';
+// Import the AIHelper component
+import AIHelper from './components/AIHelper';
 import { GameState, Direction } from './types';
 import { initGame, move as moveLogic, canMove, createTile } from './logic/gameLogic';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedBest = localStorage.getItem('bestScore');
-    const initialState = initGame(4);
+    const initialState = initGame();
     return {
       ...initialState,
       bestScore: savedBest ? parseInt(savedBest) : 0,
@@ -18,13 +20,10 @@ const App: React.FC = () => {
   const [godMode, setGodMode] = useState(false);
 
   const handleRestart = () => {
-    setGameState(prev => {
-      const initialState = initGame(4);
-      return {
-        ...initialState,
-        bestScore: prev.bestScore
-      } as GameState;
-    });
+    setGameState(prev => ({
+      ...initGame(),
+      bestScore: prev.bestScore
+    } as GameState));
     setGodMode(false);
   };
 
@@ -45,25 +44,10 @@ const App: React.FC = () => {
       const newTile = createTile(spot.r, spot.c);
       const newTiles = [...prev.tiles, newTile];
       const over = !canMove(newTiles, prev.gridSize);
-      const score = newTiles.reduce((sum, t) => sum + t.value, 0);
 
-      return { ...prev, tiles: newTiles, score, over };
+      return { ...prev, tiles: newTiles, over };
     });
   }, []);
-
-  const handleSpawnAt = (row: number, col: number) => {
-    if (!godMode) return;
-    setGameState(prev => {
-      if (prev.tiles.some(t => t.row === row && t.col === col)) return prev;
-      
-      const newTile = createTile(row, col);
-      const newTiles = [...prev.tiles, newTile];
-      const over = !canMove(newTiles, prev.gridSize);
-      const score = newTiles.reduce((sum, t) => sum + t.value, 0);
-      
-      return { ...prev, tiles: newTiles, score, over };
-    });
-  };
 
   const handleDeleteTile = (id: number) => {
     if (!godMode) return;
@@ -71,8 +55,7 @@ const App: React.FC = () => {
     setGameState(prev => {
       const newTiles = prev.tiles.filter(t => t.id !== id);
       const over = !canMove(newTiles, prev.gridSize);
-      const score = newTiles.reduce((sum, t) => sum + t.value, 0);
-      return { ...prev, tiles: newTiles, score, over };
+      return { ...prev, tiles: newTiles, over };
     });
   };
 
@@ -80,6 +63,7 @@ const App: React.FC = () => {
     if (!godMode) return;
 
     setGameState(prev => {
+      // Check if spot is occupied
       if (prev.tiles.some(t => t.row === row && t.col === col && t.id !== id)) return prev;
 
       const newTiles = prev.tiles.map(t => 
@@ -131,6 +115,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Space key for manual spawning in God Mode
       if (e.code === 'Space' && godMode) {
         e.preventDefault();
         handleManualSpawn();
@@ -200,7 +185,6 @@ const App: React.FC = () => {
               onDeleteTile={handleDeleteTile} 
               onMoveTile={handleMoveTile}
               onSwapTiles={handleSwapTiles}
-              onSpawnAt={handleSpawnAt}
               godMode={godMode}
             />
             
@@ -211,8 +195,8 @@ const App: React.FC = () => {
                 </h2>
                 <p className="text-slate-300 mb-8 font-medium">
                   {isWin 
-                    ? `You reached 2048 with a total mass of ${gameState.score}!` 
-                    : `No more moves left. Your final board mass is ${gameState.score}.`}
+                    ? `You reached 2048 with a score of ${gameState.score}!` 
+                    : `No more moves left. Your final score is ${gameState.score}.`}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button 
@@ -263,6 +247,9 @@ const App: React.FC = () => {
 
         {/* Control Column */}
         <div className="flex flex-col gap-6 w-full lg:w-80">
+          {/* Include Gemini AI Strategist */}
+          <AIHelper gameState={gameState} />
+
           <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-bold flex items-center gap-2 ${godMode ? 'text-red-400' : 'text-white'}`}>
@@ -282,16 +269,6 @@ const App: React.FC = () => {
                 <p className="text-red-400 font-bold text-sm uppercase tracking-wider mb-2">Divine Instructions:</p>
                 <div className="space-y-3">
                   <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    <span className="text-white font-bold block mb-1">✨ Manifestation:</span>
-                    Click empty spot or press <kbd className="px-1 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold border border-red-400">SPACE</kbd>.
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleManualSpawn(); }}
-                      className="mt-2 w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold text-xs uppercase transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-                    >
-                      Spawn Random Tile
-                    </button>
-                  </p>
-                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                     <span className="text-white font-bold block mb-1">⚛️ Displacement:</span>
                     Drag a tile to an empty spot.
                   </p>
@@ -300,8 +277,15 @@ const App: React.FC = () => {
                     Drag onto another tile to swap.
                   </p>
                   <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                    <span className="text-white font-bold block mb-1">✨ Manifestation:</span>
+                    Press <kbd className="px-1 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold border border-red-400">SPACE</kbd> to add a new tile.
+                  </p>
+                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                     <span className="text-white font-bold block mb-1">🗑️ Annihilation:</span>
                     Click the <strong>corner icon</strong> to delete.
+                  </p>
+                  <p className="text-blue-400 text-xs font-semibold italic border-t border-red-500/20 pt-2">
+                    Keyboard moves remain enabled!
                   </p>
                 </div>
               </div>
@@ -310,6 +294,16 @@ const App: React.FC = () => {
                 Toggle God Mode to manipulate the quantum state of the board while maintaining control.
               </p>
             )}
+          </div>
+          
+          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+            <h4 className="text-sm font-bold text-blue-400 mb-2 flex items-center gap-2">
+              <i className="fa-solid fa-circle-info"></i>
+              Quantum Reality
+            </h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              When God Mode is active, natural physics and direct manipulation coexist perfectly. Use your power wisely.
+            </p>
           </div>
         </div>
       </div>
