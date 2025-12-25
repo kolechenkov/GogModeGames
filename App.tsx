@@ -2,8 +2,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ScoreBoard from './components/ScoreBoard';
 import Board from './components/Board';
-// Import the AIHelper component
-import AIHelper from './components/AIHelper';
 import { GameState, Direction } from './types';
 import { initGame, move as moveLogic, canMove, createTile } from './logic/gameLogic';
 
@@ -247,9 +245,6 @@ const App: React.FC = () => {
 
         {/* Control Column */}
         <div className="flex flex-col gap-6 w-full lg:w-80">
-          {/* Include Gemini AI Strategist */}
-          <AIHelper gameState={gameState} />
-
           <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-bold flex items-center gap-2 ${godMode ? 'text-red-400' : 'text-white'}`}>
