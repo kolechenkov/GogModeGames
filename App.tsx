@@ -90,6 +90,21 @@ const App: React.FC = () => {
     });
   };
 
+  const handleSpawnAt = (row: number, col: number) => {
+    if (!godMode) return;
+
+    setGameState(prev => {
+      // Check if spot is already occupied
+      if (prev.tiles.some(t => t.row === row && t.col === col)) return prev;
+
+      const newTile = createTile(row, col);
+      const newTiles = [...prev.tiles, newTile];
+      const over = !canMove(newTiles, prev.gridSize);
+
+      return { ...prev, tiles: newTiles, over };
+    });
+  };
+
   const handleContinue = () => {
     setGameState(prev => ({
       ...prev,
@@ -145,10 +160,13 @@ const App: React.FC = () => {
     const dx = x - touchStart.x;
     const dy = y - touchStart.y;
 
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (Math.abs(dx) > 30) handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
-    } else {
-      if (Math.abs(dy) > 30) handleMove(dy > 0 ? 'DOWN' : 'UP');
+    // Only handle swipe if it's a significant movement (not a tap)
+    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
+      } else {
+        handleMove(dy > 0 ? 'DOWN' : 'UP');
+      }
     }
     setTouchStart(null);
   };
@@ -183,6 +201,7 @@ const App: React.FC = () => {
               onDeleteTile={handleDeleteTile} 
               onMoveTile={handleMoveTile}
               onSwapTiles={handleSwapTiles}
+              onSpawnAt={handleSpawnAt}
               godMode={godMode}
             />
             
@@ -245,7 +264,7 @@ const App: React.FC = () => {
 
         {/* Control Column */}
         <div className="flex flex-col gap-6 w-full lg:w-80">
-          <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'}`}>
+          <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'} lg:sticky lg:top-4 max-h-[calc(100vh-2rem)] overflow-y-auto`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-bold flex items-center gap-2 ${godMode ? 'text-red-400' : 'text-white'}`}>
                 <i className={`fa-solid ${godMode ? 'fa-bolt-lightning animate-pulse' : 'fa-hand-sparkles text-emerald-400'}`}></i>
@@ -273,7 +292,7 @@ const App: React.FC = () => {
                   </p>
                   <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                     <span className="text-white font-bold block mb-1">✨ Manifestation:</span>
-                    Press <kbd className="px-1 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold border border-red-400">SPACE</kbd> to add a new tile.
+                    Tap an empty cell or press <kbd className="px-1 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold border border-red-400">SPACE</kbd> to add a new tile.
                   </p>
                   <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                     <span className="text-white font-bold block mb-1">🗑️ Annihilation:</span>

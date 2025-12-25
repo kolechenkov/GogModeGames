@@ -16,6 +16,7 @@ interface BoardProps {
 const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile, onSwapTiles, onSpawnAt, godMode }) => {
   const [dragOverCell, setDragOverCell] = useState<{r: number, c: number} | null>(null);
   const [dragOverTileId, setDragOverTileId] = useState<number | null>(null);
+  const [cellTouchStart, setCellTouchStart] = useState<{r: number, c: number, time: number} | null>(null);
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
     e.dataTransfer.setData('text/plain', id.toString());
@@ -76,13 +77,38 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
       cells.push(
         <div 
           key={`${r}-${c}`} 
-          className={`bg-slate-700/30 rounded-lg w-full h-full transition-all duration-200 flex items-center justify-center ${
+          className={`bg-slate-700/30 rounded-lg w-full h-full transition-all duration-200 flex items-center justify-center select-none ${
             isOver ? 'bg-emerald-500/20 ring-2 ring-emerald-500 scale-[0.98]' : ''
           } ${godMode && !isOccupied ? 'cursor-cell hover:bg-emerald-500/10' : ''}`}
+          style={{ touchAction: 'manipulation' }}
           onDragOver={(e) => handleCellDragOver(e, r, c)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDropOnCell(e, r, c)}
-          onClick={() => { if (godMode && !isOccupied) onSpawnAt(r, c); }}
+          onTouchStart={(e) => {
+            if (godMode && !isOccupied) {
+              e.stopPropagation();
+              setCellTouchStart({ r, c, time: Date.now() });
+            }
+          }}
+          onTouchEnd={(e) => {
+            if (godMode && !isOccupied && cellTouchStart && cellTouchStart.r === r && cellTouchStart.c === c) {
+              const touchDuration = Date.now() - cellTouchStart.time;
+              // Only spawn if it was a quick tap (less than 200ms) and not a swipe
+              if (touchDuration < 200) {
+                e.preventDefault();
+                e.stopPropagation();
+                onSpawnAt(r, c);
+              }
+              setCellTouchStart(null);
+            }
+          }}
+          onClick={(e) => { 
+            if (godMode && !isOccupied) {
+              e.preventDefault();
+              e.stopPropagation();
+              onSpawnAt(r, c); 
+            }
+          }}
         >
             {isOver && <i className="fa-solid fa-arrows-up-down-left-right text-emerald-400 text-lg"></i>}
             {!isOccupied && godMode && !isOver && (
@@ -95,10 +121,16 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
 
   return (
     <div 
-      className={`relative aspect-square w-full max-w-[500px] bg-slate-800/50 p-2 rounded-2xl border transition-all duration-300 shadow-2xl overflow-hidden backdrop-blur-sm group ${
+      className={`relative w-full max-w-[500px] bg-slate-800/50 p-2 rounded-2xl border transition-all duration-300 shadow-2xl overflow-hidden backdrop-blur-sm group select-none ${
         godMode ? 'border-red-500/50 ring-2 ring-red-500/20' : 'border-slate-700'
       }`}
       onDragLeave={handleDragLeave}
+      style={{ 
+        touchAction: 'none',
+        aspectRatio: '1 / 1',
+        height: 'min(100vw - 2rem, 500px)',
+        maxHeight: '500px'
+      }}
     >
       <div 
         className="grid gap-2 h-full w-full"
