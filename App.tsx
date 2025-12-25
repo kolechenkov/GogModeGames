@@ -244,7 +244,16 @@ const App: React.FC = () => {
 
           <div className="flex justify-between items-center bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
              <div className="flex flex-col gap-1">
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {godMode && (
+                    <button
+                      onClick={handleManualSpawn}
+                      className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs border border-red-400 transition-colors flex items-center justify-center"
+                      title="Add new tile"
+                    >
+                      <i className="fa-solid fa-plus text-xs"></i>
+                    </button>
+                  )}
                   <kbd className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs border border-slate-600">↑</kbd>
                   <kbd className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs border border-slate-600">←</kbd>
                   <kbd className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs border border-slate-600">↓</kbd>
@@ -257,14 +266,14 @@ const App: React.FC = () => {
                 className="text-slate-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-semibold"
               >
                 <i className="fa-solid fa-rotate-right"></i>
-                Reset Game
+                Reset
               </button>
           </div>
         </div>
 
         {/* Control Column */}
         <div className="flex flex-col gap-6 w-full lg:w-80">
-          <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'} lg:sticky lg:top-4 max-h-[calc(100vh-2rem)] overflow-y-auto`}>
+          <div className={`p-5 rounded-2xl border transition-all duration-300 ${godMode ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-slate-800/40 border-slate-700'}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-bold flex items-center gap-2 ${godMode ? 'text-red-400' : 'text-white'}`}>
                 <i className={`fa-solid ${godMode ? 'fa-bolt-lightning animate-pulse' : 'fa-hand-sparkles text-emerald-400'}`}></i>
@@ -279,30 +288,9 @@ const App: React.FC = () => {
             </div>
 
             {godMode ? (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <p className="text-red-400 font-bold text-sm uppercase tracking-wider mb-2">Divine Instructions:</p>
-                <div className="space-y-3">
-                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    <span className="text-white font-bold block mb-1">⚛️ Displacement:</span>
-                    Drag a tile to an empty spot.
-                  </p>
-                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    <span className="text-white font-bold block mb-1">🔀 Entanglement:</span>
-                    Drag onto another tile to swap.
-                  </p>
-                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    <span className="text-white font-bold block mb-1">✨ Manifestation:</span>
-                    Tap an empty cell or press <kbd className="px-1 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold border border-red-400">SPACE</kbd> to add a new tile.
-                  </p>
-                  <p className="text-slate-200 text-sm leading-relaxed bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    <span className="text-white font-bold block mb-1">🗑️ Annihilation:</span>
-                    Click the <strong>corner icon</strong> to delete.
-                  </p>
-                  <p className="text-blue-400 text-xs font-semibold italic border-t border-red-500/20 pt-2">
-                    Keyboard moves remain enabled!
-                  </p>
-                </div>
-              </div>
+              <p className="text-sm text-slate-400 leading-relaxed italic">
+                Drag tiles to move or swap, tap empty cells to spawn, delete via corner icons.
+              </p>
             ) : (
               <p className="text-sm text-slate-400 leading-relaxed italic">
                 Toggle God Mode to manipulate the quantum state of the board while maintaining control.
