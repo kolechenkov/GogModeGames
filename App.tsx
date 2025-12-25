@@ -297,16 +297,6 @@ const App: React.FC = () => {
               </p>
             )}
           </div>
-          
-          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
-            <h4 className="text-sm font-bold text-blue-400 mb-2 flex items-center gap-2">
-              <i className="fa-solid fa-circle-info"></i>
-              Quantum Reality
-            </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              When God Mode is active, natural physics and direct manipulation coexist perfectly. Use your power wisely.
-            </p>
-          </div>
         </div>
       </div>
 
