@@ -10,7 +10,7 @@ import { initGame, move as moveLogic, canMove, createTile } from './logic/gameLo
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedBest = localStorage.getItem('bestScore');
-    const initialState = initGame(5);
+    const initialState = initGame();
     return {
       ...initialState,
       bestScore: savedBest ? parseInt(savedBest) : 0,
@@ -21,7 +21,7 @@ const App: React.FC = () => {
 
   const handleRestart = () => {
     setGameState(prev => ({
-      ...initGame(5),
+      ...initGame(),
       bestScore: prev.bestScore
     } as GameState));
     setGodMode(false);
