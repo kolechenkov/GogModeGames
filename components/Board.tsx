@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tile } from '../types';
 import TileComponent from './TileComponent';
 
@@ -17,6 +17,7 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
   const [dragOverCell, setDragOverCell] = useState<{r: number, c: number} | null>(null);
   const [dragOverTileId, setDragOverTileId] = useState<number | null>(null);
   const [cellTouchStart, setCellTouchStart] = useState<{r: number, c: number, time: number} | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{r: number, c: number} | null>(null);
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
     e.dataTransfer.setData('text/plain', id.toString());
@@ -49,6 +50,13 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
     setDragOverTileId(null);
   };
 
+  // Reset selected cell when godMode is turned off
+  useEffect(() => {
+    if (!godMode) {
+      setSelectedCell(null);
+    }
+  }, [godMode]);
+
   const handleDropOnCell = (e: React.DragEvent, row: number, col: number) => {
     e.preventDefault();
     setDragOverCell(null);
@@ -74,6 +82,8 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
       const isOver = dragOverCell?.r === r && dragOverCell?.c === c;
       const isOccupied = tiles.some(t => t.row === r && t.col === c);
 
+      const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+      
       cells.push(
         <div 
           key={`${r}-${c}`} 
@@ -93,11 +103,16 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
           onTouchEnd={(e) => {
             if (godMode && !isOccupied && cellTouchStart && cellTouchStart.r === r && cellTouchStart.c === c) {
               const touchDuration = Date.now() - cellTouchStart.time;
-              // Only spawn if it was a quick tap (less than 200ms) and not a swipe
+              // Only handle if it was a quick tap (less than 200ms) and not a swipe
               if (touchDuration < 200) {
                 e.preventDefault();
                 e.stopPropagation();
-                onSpawnAt(r, c);
+                if (isSelected) {
+                  onSpawnAt(r, c);
+                  setSelectedCell(null);
+                } else {
+                  setSelectedCell({ r, c });
+                }
               }
               setCellTouchStart(null);
             }
@@ -106,13 +121,22 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
             if (godMode && !isOccupied) {
               e.preventDefault();
               e.stopPropagation();
-              onSpawnAt(r, c); 
+              if (isSelected) {
+                onSpawnAt(r, c);
+                setSelectedCell(null);
+              } else {
+                // Reset previous selection and set new one
+                setSelectedCell({ r, c });
+              }
+            } else if (godMode && isOccupied) {
+              // Clicking on occupied cell clears selection
+              setSelectedCell(null);
             }
           }}
         >
             {isOver && <i className="fa-solid fa-arrows-up-down-left-right text-emerald-400 text-lg"></i>}
-            {!isOccupied && godMode && !isOver && (
-              <i className="fa-solid fa-plus text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+            {!isOccupied && godMode && !isOver && isSelected && (
+              <i className="fa-solid fa-plus text-emerald-400 text-lg transition-opacity"></i>
             )}
         </div>
       );

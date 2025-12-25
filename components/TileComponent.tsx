@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tile } from '../types';
 
 interface TileProps {
@@ -40,7 +40,15 @@ const TileComponent: React.FC<TileProps> = ({
   isDragTarget 
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
   const cellSize = 100 / gridSize;
+
+  // Reset selection when godMode is turned off
+  useEffect(() => {
+    if (!godMode) {
+      setIsSelected(false);
+    }
+  }, [godMode]);
   
   const baseClass = `absolute flex items-center justify-center font-bold transition-all duration-150 rounded-lg select-none group ${
     godMode ? 'cursor-grab active:cursor-grabbing hover:brightness-110' : 'cursor-default'
@@ -78,6 +86,12 @@ const TileComponent: React.FC<TileProps> = ({
         if (godMode) e.preventDefault();
       }}
       onDrop={(e) => onDrop(e, tile.id)}
+      onClick={(e) => {
+        if (godMode && !isDragging && !isDragTarget) {
+          e.stopPropagation();
+          setIsSelected(!isSelected);
+        }
+      }}
       className={`${baseClass} ${valueClass} ${animationClass} ${getTileStyles(tile.value)}`}
       style={sizeStyle}
     >
@@ -89,28 +103,31 @@ const TileComponent: React.FC<TileProps> = ({
           <div className={`absolute inset-0 rounded-lg transition-all duration-200 ${isDragTarget ? 'bg-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.5)]' : 'bg-transparent'}`}></div>
 
           {/* DYNAMIC ACTION ICON IN TOP RIGHT CORNER */}
-          <div 
-            className={`absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200 shadow-sm z-30 ${
-              isDragging ? 'bg-emerald-500 text-white opacity-100' : 
-              isDragTarget ? 'bg-blue-500 text-white opacity-100 animate-pulse' :
-              'bg-slate-900/80 text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white cursor-pointer'
-            }`}
-            onClick={(e) => {
-              // Delete only works if not currently dragging/being targeted
-              if (isDragging || isDragTarget) return;
-              e.stopPropagation();
-              onDelete(tile.id);
-            }}
-            title={isDragging ? "Moving Tile..." : isDragTarget ? "Swap Target" : "Delete Tile"}
-          >
-            {isDragging ? (
-              <i className="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
-            ) : isDragTarget ? (
-              <i className="fa-solid fa-right-left text-[10px]"></i>
-            ) : (
-              <i className="fa-solid fa-trash-can text-[10px]"></i>
-            )}
-          </div>
+          {isSelected && (
+            <div 
+              className={`absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200 shadow-sm z-30 ${
+                isDragging ? 'bg-emerald-500 text-white opacity-100' : 
+                isDragTarget ? 'bg-blue-500 text-white opacity-100 animate-pulse' :
+                'bg-slate-900/80 text-red-400 opacity-100 hover:bg-red-500 hover:text-white cursor-pointer'
+              }`}
+              onClick={(e) => {
+                // Delete only works if not currently dragging/being targeted
+                if (isDragging || isDragTarget) return;
+                e.stopPropagation();
+                setIsSelected(false);
+                onDelete(tile.id);
+              }}
+              title={isDragging ? "Moving Tile..." : isDragTarget ? "Swap Target" : "Delete Tile"}
+            >
+              {isDragging ? (
+                <i className="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+              ) : isDragTarget ? (
+                <i className="fa-solid fa-right-left text-[10px]"></i>
+              ) : (
+                <i className="fa-solid fa-trash-can text-[10px]"></i>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
