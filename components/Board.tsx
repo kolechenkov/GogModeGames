@@ -11,13 +11,15 @@ interface BoardProps {
   onSwapTiles: (sourceId: number, targetId: number) => void;
   onSpawnAt: (row: number, col: number) => void;
   godMode: boolean;
+  onSwipeDetected?: () => void;
 }
 
-const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile, onSwapTiles, onSpawnAt, godMode }) => {
+const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile, onSwapTiles, onSpawnAt, godMode, onSwipeDetected }) => {
   const [dragOverCell, setDragOverCell] = useState<{r: number, c: number} | null>(null);
   const [dragOverTileId, setDragOverTileId] = useState<number | null>(null);
-  const [cellTouchStart, setCellTouchStart] = useState<{r: number, c: number, time: number} | null>(null);
+  const [cellTouchStart, setCellTouchStart] = useState<{r: number, c: number, time: number, x: number, y: number} | null>(null);
   const [selectedCell, setSelectedCell] = useState<{r: number, c: number} | null>(null);
+  const [wasSwipe, setWasSwipe] = useState(false);
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
     e.dataTransfer.setData('text/plain', id.toString());
@@ -96,15 +98,43 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
           onDrop={(e) => handleDropOnCell(e, r, c)}
           onTouchStart={(e) => {
             if (godMode && !isOccupied) {
-              e.stopPropagation();
-              setCellTouchStart({ r, c, time: Date.now() });
+              const touch = e.touches[0];
+              setCellTouchStart({ r, c, time: Date.now(), x: touch.clientX, y: touch.clientY });
+              setWasSwipe(false);
+            }
+          }}
+          onTouchMove={(e) => {
+            if (godMode && !isOccupied && cellTouchStart && cellTouchStart.r === r && cellTouchStart.c === c && e.touches.length > 0) {
+              const touch = e.touches[0];
+              const dx = Math.abs(touch.clientX - cellTouchStart.x);
+              const dy = Math.abs(touch.clientY - cellTouchStart.y);
+              // If movement is significant, mark as swipe and clear selection
+              if (dx > 10 || dy > 10) {
+                setWasSwipe(true);
+                setSelectedCell(null);
+                if (onSwipeDetected) {
+                  onSwipeDetected();
+                }
+              }
             }
           }}
           onTouchEnd={(e) => {
             if (godMode && !isOccupied && cellTouchStart && cellTouchStart.r === r && cellTouchStart.c === c) {
+              // Always reset selection if it was a swipe
+              if (wasSwipe) {
+                setSelectedCell(null);
+                setCellTouchStart(null);
+                setWasSwipe(false);
+                return;
+              }
+
               const touchDuration = Date.now() - cellTouchStart.time;
-              // Only handle if it was a quick tap (less than 200ms) and not a swipe
-              if (touchDuration < 200) {
+              const touch = e.changedTouches[0];
+              const dx = Math.abs(touch.clientX - cellTouchStart.x);
+              const dy = Math.abs(touch.clientY - cellTouchStart.y);
+              
+              // Only handle if it was a quick tap (less than 300ms) with minimal movement (not a swipe)
+              if (touchDuration < 300 && dx < 10 && dy < 10) {
                 e.preventDefault();
                 e.stopPropagation();
                 if (isSelected) {
@@ -113,9 +143,18 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
                 } else {
                   setSelectedCell({ r, c });
                 }
+              } else {
+                // Was a swipe or too long, hide selection
+                setSelectedCell(null);
               }
               setCellTouchStart(null);
+              setWasSwipe(false);
             }
+          }}
+          onTouchCancel={() => {
+            // Reset on touch cancel
+            setCellTouchStart(null);
+            setWasSwipe(false);
           }}
           onClick={(e) => { 
             if (godMode && !isOccupied) {
