@@ -11,7 +11,7 @@ export const createTile = (row: number, col: number, value: number = Math.random
   isNew: true
 });
 
-export const initGame = (gridSize: number = 5): Partial<GameState> => {
+export const initGame = (gridSize: number = 4): Partial<GameState> => {
   const tiles: Tile[] = [];
   tiles.push(createTile(Math.floor(Math.random() * gridSize), Math.floor(Math.random() * gridSize)));
   
@@ -29,7 +29,7 @@ export const initGame = (gridSize: number = 5): Partial<GameState> => {
 
   return {
     tiles,
-    score: 0,
+    score: tiles.reduce((sum, t) => sum + t.value, 0),
     over: false,
     won: false,
     winAcknowledged: false,
@@ -47,7 +47,6 @@ export const move = (state: GameState, direction: Direction): GameState => {
   const { tiles, gridSize } = state;
   // Deep clone tiles to avoid mutating state directly
   let newTiles: Tile[] = JSON.parse(JSON.stringify(tiles));
-  let score = state.score;
   let moved = false;
 
   const isVertical = direction === 'UP' || direction === 'DOWN';
@@ -71,7 +70,6 @@ export const move = (state: GameState, direction: Direction): GameState => {
 
       if (next && current.value === next.value) {
         const newValue = current.value * 2;
-        score += newValue;
         
         // Update the current tile's value
         current.value = newValue;
@@ -124,6 +122,8 @@ export const move = (state: GameState, direction: Direction): GameState => {
 
     const won = newTiles.some(t => t.value === 2048);
     const over = !canMove(newTiles, gridSize);
+    // Recalculate score as the sum of all tile values on the board
+    const score = newTiles.reduce((sum, t) => sum + t.value, 0);
 
     return { ...state, tiles: newTiles, score, won: state.won || won, over };
   }
