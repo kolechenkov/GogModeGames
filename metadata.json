@@ -1,0 +1,5 @@
+{
+  "name": "2048 Quantum",
+  "description": "A high-performance, aesthetically pleasing 2048 game with built-in Gemini AI strategic analysis.",
+  "requestFramePermissions": []
+}
