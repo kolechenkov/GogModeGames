@@ -21,6 +21,12 @@
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
         }
+        .pt-safe {
+            padding-top: env(safe-area-inset-top);
+        }
+        .pt-safe-top {
+            padding-top: calc(env(safe-area-inset-top) + 1rem);
+        }
         .tile-container {
             transition: transform 150ms ease-in-out;
         }
