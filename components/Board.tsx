@@ -19,6 +19,7 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
   const [dragOverTileId, setDragOverTileId] = useState<number | null>(null);
   const [cellTouchStart, setCellTouchStart] = useState<{r: number, c: number, time: number, x: number, y: number} | null>(null);
   const [selectedCell, setSelectedCell] = useState<{r: number, c: number} | null>(null);
+  const [selectedTileId, setSelectedTileId] = useState<number | null>(null);
   const [wasSwipe, setWasSwipe] = useState(false);
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
@@ -52,11 +53,31 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
     setDragOverTileId(null);
   };
 
-  // Reset selected cell when godMode is turned off
+  // Reset selected cell and tile when godMode is turned off
   useEffect(() => {
     if (!godMode) {
       setSelectedCell(null);
+      setSelectedTileId(null);
     }
+  }, [godMode]);
+
+  // Handle clicks outside the board to deselect tiles
+  useEffect(() => {
+    if (!godMode) return;
+    
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const boardElement = target.closest('[data-board-container]');
+      if (!boardElement) {
+        setSelectedTileId(null);
+        setSelectedCell(null);
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
   }, [godMode]);
 
   const handleDropOnCell = (e: React.DragEvent, row: number, col: number) => {
@@ -188,6 +209,12 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
         godMode ? 'border-red-500/50 ring-2 ring-red-500/20' : 'border-slate-700'
       }`}
       onDragLeave={handleDragLeave}
+      onClick={(e) => {
+        // Click on board background (not on tiles or cells) deselects all tiles
+        if (godMode && e.target === e.currentTarget) {
+          setSelectedTileId(null);
+        }
+      }}
       style={{ 
         touchAction: 'none',
         aspectRatio: '1 / 1',
@@ -221,6 +248,14 @@ const Board: React.FC<BoardProps> = ({ tiles, gridSize, onDeleteTile, onMoveTile
                 onDragStart={handleDragStart}
                 onDrop={handleDropOnTile}
                 isDragTarget={dragOverTileId === tile.id}
+                isSelected={selectedTileId === tile.id}
+                onSelect={(tileId) => {
+                  setSelectedTileId(tileId);
+                  setSelectedCell(null); // Clear cell selection when tile is selected
+                }}
+                onDeselectAll={() => {
+                  setSelectedTileId(null);
+                }}
               />
             </div>
           ))}

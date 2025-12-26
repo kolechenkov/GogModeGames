@@ -10,6 +10,9 @@ interface TileProps {
   onDragStart: (e: React.DragEvent, id: number) => void;
   onDrop: (e: React.DragEvent, targetTileId: number) => void;
   isDragTarget?: boolean;
+  isSelected?: boolean;
+  onSelect?: (tileId: number) => void;
+  onDeselectAll?: () => void;
 }
 
 const getTileStyles = (value: number) => {
@@ -37,18 +40,13 @@ const TileComponent: React.FC<TileProps> = ({
   godMode, 
   onDragStart, 
   onDrop,
-  isDragTarget 
+  isDragTarget,
+  isSelected = false,
+  onSelect,
+  onDeselectAll
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
   const cellSize = 100 / gridSize;
-
-  // Reset selection when godMode is turned off
-  useEffect(() => {
-    if (!godMode) {
-      setIsSelected(false);
-    }
-  }, [godMode]);
   
   const baseClass = `absolute flex items-center justify-center font-bold transition-all duration-150 rounded-lg select-none group ${
     godMode ? 'cursor-grab active:cursor-grabbing hover:brightness-110' : 'cursor-default'
@@ -89,7 +87,9 @@ const TileComponent: React.FC<TileProps> = ({
       onClick={(e) => {
         if (godMode && !isDragging && !isDragTarget) {
           e.stopPropagation();
-          setIsSelected(!isSelected);
+          if (onSelect) {
+            onSelect(tile.id);
+          }
         }
       }}
       className={`${baseClass} ${valueClass} ${animationClass} ${getTileStyles(tile.value)}`}
@@ -114,7 +114,9 @@ const TileComponent: React.FC<TileProps> = ({
                 // Delete only works if not currently dragging/being targeted
                 if (isDragging || isDragTarget) return;
                 e.stopPropagation();
-                setIsSelected(false);
+                if (onDeselectAll) {
+                  onDeselectAll();
+                }
                 onDelete(tile.id);
               }}
               title={isDragging ? "Moving Tile..." : isDragTarget ? "Swap Target" : "Delete Tile"}
