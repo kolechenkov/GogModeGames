@@ -175,14 +175,14 @@ const App: React.FC = () => {
   const isWin = gameState.won && !gameState.winAcknowledged;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex flex-col items-center p-4 selection:bg-emerald-500/30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className="min-h-screen bg-[#0f172a] flex flex-col items-center p-4 selection:bg-emerald-500/30" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) - 15px)' }}>
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-start pt-2">
         
         {/* Main Game Column */}
         <div className="flex flex-col gap-6 w-full max-w-[500px]">
           <header className="flex items-end justify-between w-full">
             <div>
-              <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 tracking-tighter" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
+              <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 tracking-tighter" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem + 10px)' }}>
                 2048 <span className="text-xl align-top font-semibold opacity-60">Quantum</span>
               </h1>
               <p className="text-slate-400 font-medium mt-1">Merge tiles to reach 2048!</p>
