@@ -83,7 +83,7 @@ import { InAppPurchase } from '@capacitor-community/in-app-purchase';
 const GOD_MODE_PRODUCT_ID = 'com.kolechenkov.2048godmode.godmode';
 
 export const purchaseService = {
-  // Инициализация покупок
+  // Initialize purchases
   async initialize(): Promise<void> {
     try {
       await InAppPurchase.initialize();
@@ -92,7 +92,7 @@ export const purchaseService = {
     }
   },
 
-  // Получить информацию о продукте
+  // Get product information
   async getProductInfo(): Promise<any> {
     try {
       const products = await InAppPurchase.getProducts({
@@ -106,7 +106,7 @@ export const purchaseService = {
     }
   },
 
-  // Проверить, куплен ли God Mode
+  // Check if God Mode is purchased
   async isPurchased(): Promise<boolean> {
     try {
       const purchases = await InAppPurchase.getPurchases();
@@ -119,7 +119,7 @@ export const purchaseService = {
     }
   },
 
-  // Купить God Mode
+  // Purchase God Mode
   async purchase(): Promise<boolean> {
     try {
       const result = await InAppPurchase.purchase({
@@ -133,7 +133,7 @@ export const purchaseService = {
     }
   },
 
-  // Восстановить покупки (если пользователь переустановил приложение)
+  // Restore purchases (if user reinstalled the app)
   async restorePurchases(): Promise<boolean> {
     try {
       await InAppPurchase.restorePurchases();
@@ -160,16 +160,16 @@ const App: React.FC = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [productInfo, setProductInfo] = useState<any>(null);
 
-  // Инициализация при загрузке
+  // Initialize on load
   useEffect(() => {
     const init = async () => {
       await purchaseService.initialize();
       
-      // Проверить, куплен ли уже God Mode
+      // Check if God Mode is already purchased
       const purchased = await purchaseService.isPurchased();
       setGodModePurchased(purchased);
       
-      // Получить информацию о продукте (цена и т.д.)
+      // Get product information (price, etc.)
       const product = await purchaseService.getProductInfo();
       setProductInfo(product);
     };
@@ -177,20 +177,20 @@ const App: React.FC = () => {
     init();
   }, []);
 
-  // Обработка покупки
+  // Handle purchase
   const handlePurchase = async () => {
     setPurchasing(true);
     const success = await purchaseService.purchase();
     
     if (success) {
       setGodModePurchased(true);
-      setGodMode(true); // Автоматически включить после покупки
+      setGodMode(true); // Automatically enable after purchase
     }
     
     setPurchasing(false);
   };
 
-  // Восстановление покупок
+  // Restore purchases
   const handleRestore = async () => {
     const restored = await purchaseService.restorePurchases();
     if (restored) {
@@ -198,7 +198,7 @@ const App: React.FC = () => {
     }
   };
 
-  // God Mode можно включать только если куплен
+  // God Mode can only be enabled if purchased
   const toggleGodMode = () => {
     if (godModePurchased) {
       setGodMode(!godMode);
@@ -206,9 +206,9 @@ const App: React.FC = () => {
   };
 
   return (
-    // ... ваш существующий код ...
+    // ... your existing code ...
     
-    // В секции God Mode замените переключатель на:
+    // In the God Mode section, replace the toggle with:
     {!godModePurchased ? (
       <div>
         <button 
@@ -228,9 +228,9 @@ const App: React.FC = () => {
         </button>
       </div>
     ) : (
-      // Ваш существующий переключатель God Mode
+      // Your existing God Mode toggle
       <button onClick={toggleGodMode}>
-        {/* существующий код переключателя */}
+        {/* existing toggle code */}
       </button>
     )}
   );
