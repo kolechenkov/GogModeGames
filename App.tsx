@@ -300,19 +300,19 @@ const App: React.FC = () => {
             {showOverlay && (
               <div className="absolute inset-0 z-20 bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center rounded-2xl border-2 border-emerald-500/50 p-8 text-center animate-in zoom-in duration-300">
                 <h2 className="text-4xl font-black text-white mb-2">
-                  {isWin ? "Quantum Achieved!" : "Simulation Ended"}
+                  {isWin ? "Quantum Achieved!" : "Game Over"}
                 </h2>
                 <p className="text-slate-300 mb-8 font-medium">
                   {isWin 
                     ? `You reached 2048 with a score of ${gameState.score}!` 
-                    : `No more moves left. Your final score is ${gameState.score}.`}
+                    : `You scored ${gameState.score} points, but there are no more moves. You can enable God Mode and continue!`}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button 
                     onClick={handleRestart}
                     className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
                   >
-                    Restart Universe
+                    Universe
                   </button>
                   {isWin ? (
                     <button 
@@ -323,10 +323,13 @@ const App: React.FC = () => {
                     </button>
                   ) : (
                     <button 
-                      onClick={() => setGameState(prev => ({...prev, over: false}))}
-                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-all"
+                      onClick={() => {
+                        handleGodModeToggle();
+                        setGameState(prev => ({...prev, over: false}));
+                      }}
+                      className="px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95"
                     >
-                      Keep Observing
+                      Enable God Mode
                     </button>
                   )}
                 </div>
