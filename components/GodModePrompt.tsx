@@ -16,11 +16,11 @@ const GodModePrompt: React.FC<GodModePromptProps> = ({ onEnable, onSkip }) => {
         </div>
         
         <h2 className="text-2xl font-bold text-white text-center mb-3">
-          Попробуй God Mode
+          Try God Mode
         </h2>
         
         <p className="text-slate-300 text-center mb-6 leading-relaxed">
-          Попробуй God Mode, чтобы управлять плитками, перемещать их, добавлять новые и удалять ненужные. Получи полный контроль над игрой!
+          Try God Mode to control tiles, move them around, add new ones, and remove unwanted tiles. Get full control over the game!
         </p>
         
         <div className="flex flex-col sm:flex-row gap-3">
@@ -28,13 +28,13 @@ const GodModePrompt: React.FC<GodModePromptProps> = ({ onEnable, onSkip }) => {
             onClick={onSkip}
             className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
           >
-            Пропустить
+            Skip
           </button>
           <button
             onClick={onEnable}
             className="flex-1 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
           >
-            Включить
+            Enable
           </button>
         </div>
       </div>

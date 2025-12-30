@@ -15,29 +15,29 @@ const GodModeWelcome: React.FC<GodModeWelcomeProps> = ({ onClose }) => {
         </div>
         
         <h2 className="text-2xl font-bold text-white text-center mb-3">
-          God Mode активирован!
+          God Mode Activated!
         </h2>
         
         <div className="text-slate-300 mb-6 space-y-3 leading-relaxed">
           <p className="text-center">
-            Теперь у тебя есть полный контроль над игрой:
+            You now have full control over the game:
           </p>
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
               <i className="fa-solid fa-arrows-up-down-left-right text-emerald-400 mt-1"></i>
-              <span>Перетаскивай плитки для перемещения</span>
+              <span>Drag tiles to move them</span>
             </li>
             <li className="flex items-start gap-2">
               <i className="fa-solid fa-right-left text-blue-400 mt-1"></i>
-              <span>Перетаскивай на другую плитку для обмена</span>
+              <span>Drag onto another tile to swap</span>
             </li>
             <li className="flex items-start gap-2">
               <i className="fa-solid fa-plus text-emerald-400 mt-1"></i>
-              <span>Тапни на пустую ячейку дважды, чтобы добавить плитку</span>
+              <span>Tap an empty cell twice to add a tile</span>
             </li>
             <li className="flex items-start gap-2">
               <i className="fa-solid fa-trash-can text-red-400 mt-1"></i>
-              <span>Кликни на плитку, чтобы удалить её</span>
+              <span>Click a tile to delete it</span>
             </li>
           </ul>
         </div>
@@ -46,7 +46,7 @@ const GodModeWelcome: React.FC<GodModeWelcomeProps> = ({ onClose }) => {
           onClick={onClose}
           className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95"
         >
-          Понятно
+          Got it
         </button>
       </div>
     </div>
