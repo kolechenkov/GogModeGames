@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ScoreBoard from './components/ScoreBoard';
 import Board from './components/Board';
+import GodModePrompt from './components/GodModePrompt';
+import GodModeWelcome from './components/GodModeWelcome';
 import { GameState, Direction } from './types';
 import { initGame, move as moveLogic, canMove, createTile } from './logic/gameLogic';
 
@@ -16,6 +18,95 @@ const App: React.FC = () => {
   });
 
   const [godMode, setGodMode] = useState(false);
+  
+  // Dialog states
+  const [showGodModePrompt, setShowGodModePrompt] = useState(false);
+  const [showGodModeWelcome, setShowGodModeWelcome] = useState(false);
+
+  // Load dialog states from localStorage
+  useEffect(() => {
+    const prompt10Shown = localStorage.getItem('godModePrompt10Shown') === 'true';
+    const prompt15Shown = localStorage.getItem('godModePrompt15Shown') === 'true';
+    const godModeEverEnabled = localStorage.getItem('godModeEverEnabled') === 'true';
+    const godModeWelcomeShown = localStorage.getItem('godModeWelcomeShown') === 'true';
+    
+    // Check if we should show welcome dialog on mount (shouldn't happen, but just in case)
+    if (godModeEverEnabled && !godModeWelcomeShown && godMode) {
+      setShowGodModeWelcome(true);
+    }
+  }, []);
+
+  // Check if we should show prompt dialog based on filled cells
+  useEffect(() => {
+    const filledCells = gameState.tiles.length;
+    const prompt10Shown = localStorage.getItem('godModePrompt10Shown') === 'true';
+    const prompt15Shown = localStorage.getItem('godModePrompt15Shown') === 'true';
+    const godModeEverEnabled = localStorage.getItem('godModeEverEnabled') === 'true';
+
+    // Don't show if God Mode was ever enabled
+    if (godModeEverEnabled) return;
+    
+    // Don't show if already showing
+    if (showGodModePrompt) return;
+    
+    // Don't show if 15 was already shown/skipped (no more prompts)
+    if (prompt15Shown) return;
+
+    // Show prompt at 10 cells (if not shown before)
+    if (filledCells === 10 && !prompt10Shown) {
+      setShowGodModePrompt(true);
+    }
+    // Show prompt at 15 cells (only if 10 was shown/skipped but 15 wasn't)
+    else if (filledCells === 15 && prompt10Shown && !prompt15Shown) {
+      setShowGodModePrompt(true);
+    }
+  }, [gameState.tiles.length, showGodModePrompt]);
+
+  // Handle God Mode toggle with welcome dialog
+  const handleGodModeToggle = () => {
+    const newGodMode = !godMode;
+    setGodMode(newGodMode);
+    
+    if (newGodMode) {
+      // Mark that God Mode was ever enabled
+      localStorage.setItem('godModeEverEnabled', 'true');
+      
+      // Show welcome dialog if not shown before
+      const godModeWelcomeShown = localStorage.getItem('godModeWelcomeShown') === 'true';
+      if (!godModeWelcomeShown) {
+        setShowGodModeWelcome(true);
+      }
+    }
+  };
+
+  // Handle prompt enable button
+  const handlePromptEnable = () => {
+    localStorage.setItem('godModePrompt10Shown', 'true');
+    localStorage.setItem('godModePrompt15Shown', 'true');
+    setShowGodModePrompt(false);
+    handleGodModeToggle(); // This will also show welcome dialog
+  };
+
+  // Handle prompt skip button
+  const handlePromptSkip = () => {
+    const filledCells = gameState.tiles.length;
+    
+    if (filledCells >= 10 && filledCells < 15) {
+      // Skip at 10 cells
+      localStorage.setItem('godModePrompt10Shown', 'true');
+    } else if (filledCells >= 15) {
+      // Skip at 15 cells
+      localStorage.setItem('godModePrompt15Shown', 'true');
+    }
+    
+    setShowGodModePrompt(false);
+  };
+
+  // Handle welcome dialog close
+  const handleWelcomeClose = () => {
+    localStorage.setItem('godModeWelcomeShown', 'true');
+    setShowGodModeWelcome(false);
+  };
 
   const handleRestart = () => {
     setGameState(prev => ({
@@ -281,7 +372,7 @@ const App: React.FC = () => {
                 God Mode
               </h3>
               <button 
-                onClick={() => setGodMode(!godMode)}
+                onClick={handleGodModeToggle}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${godMode ? 'bg-red-500' : 'bg-slate-700'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${godMode ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -304,6 +395,21 @@ const App: React.FC = () => {
       <footer className="mt-12 text-slate-600 text-xs font-medium tracking-widest uppercase">
         Engineered with Precision &bull; 2024
       </footer>
+
+      {/* God Mode Prompt Dialog */}
+      {showGodModePrompt && (
+        <GodModePrompt
+          onEnable={handlePromptEnable}
+          onSkip={handlePromptSkip}
+        />
+      )}
+
+      {/* God Mode Welcome Dialog */}
+      {showGodModeWelcome && (
+        <GodModeWelcome
+          onClose={handleWelcomeClose}
+        />
+      )}
     </div>
   );
 };
